@@ -93,7 +93,7 @@ Arrow.prototype.update = function () {
         if (obj !== this && obj !== this.mMaster && //avoid killing the archer who shoot
             this.getRigidBody().collisionTest(obj.getRigidBody(), collisionInfo)) {
             if (obj instanceof Archer) {
-                obj.loseHp();
+                obj.loseHp(1);
             }
             this.mAllObjs.removeFromSet(this);
             this.mCurrentState = Arrow.eArrowState.eMiss;
@@ -107,7 +107,7 @@ Arrow.prototype.update = function () {
         if (obj !== this && obj !== this.mMaster && //avoid killing the archer who shoot
             this.getRigidBody().collisionTest(obj.getRigidBody(), collisionInfo)) {
             if (obj instanceof LifePotion) {
-                this.mMaster.addHp();
+                this.mMaster.addHp(1);
             }
             this.mAllObjs.removeFromSet(obj);
             this.mDestroyable.removeFromSet(obj);
@@ -116,14 +116,28 @@ Arrow.prototype.update = function () {
             this.mGenerateParticles = 0;
         }
     }
-
+    /*
     var v = this.getRigidBody().getVelocity();
     if (Math.abs(v[0]) < 0.2 && Math.abs(v[1]) < 0.2) {
         this.mAllObjs.removeFromSet(this);
         this.mCurrentState = Arrow.eArrowState.eMiss;
     }
+    */
+    if (this.getRigidBody().collisionTest(this.mMaster.getRigidBody(), collisionInfo)) {
+        this.mAllObjs.removeFromSet(this);
+        this.mCurrentState = Arrow.eArrowState.eMiss;
+        this.mGenerateParticles = 0;
+    }
 
-    if (this.getXform().getPosition()[1] < -200) {
+    if (this.getXform().getYPos() < -250) {
+        this.mAllObjs.removeFromSet(this);
+        this.mCurrentState = Arrow.eArrowState.eMiss;
+    }
+    if (this.getXform().getXPos() < -500) {
+        this.mAllObjs.removeFromSet(this);
+        this.mCurrentState = Arrow.eArrowState.eMiss;
+    }
+    if (this.getXform().getXPos() > 500) {
         this.mAllObjs.removeFromSet(this);
         this.mCurrentState = Arrow.eArrowState.eMiss;
     }
@@ -148,7 +162,6 @@ Arrow.prototype.getCurrentState = function () {
 Arrow.prototype.createParticle = function(atX, atY) {
     var life = 30 + Math.random() * 200;
     var p = new ParticleGameObject("assets/particles/Particle2.png", atX, atY, life);
-    console.log(p);
     p.getRenderable().setColor([0, 0, 1, 1]);
 
     // size of the particle

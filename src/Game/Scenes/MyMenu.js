@@ -51,7 +51,7 @@ MyMenu.prototype.unloadScene = function() {
     gEngine.Textures.unloadTexture(MyMenu.eAssets.MenuMarkTexture);
     // textures for each car color
 
-    var nextLevel = new SceneA(this.game); // pass CarColor selection to MyGame
+    var nextLevel = new SceneA(this.game, Background.ePlace.eEasternCity, Background.eSky.eNightCloudy); // pass CarColor selection to MyGame
     gEngine.Core.startScene(nextLevel);
     this.game.mCurrentScene = nextLevel;
     //this.game.setState(Game.eGameState.ePlayer1_Turn);
