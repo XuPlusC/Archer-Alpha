@@ -42,8 +42,9 @@ GameOver1.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(this.kBackground);
     gEngine.Textures.unloadTexture(this.kP1Win);
 
-    this.mNext = new SceneA(this.mGame);
+    this.mNext = new SceneA(this.mGame, Background.ePlace.eOutskirts, Background.eSky.eCloudy);
     gEngine.Core.startScene(this.mNext);
+    this.game.mCurrentScene = nextLevel;
 };
 
 GameOver1.prototype.initialize = function () {
