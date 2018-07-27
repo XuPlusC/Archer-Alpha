@@ -188,10 +188,10 @@ SceneA.prototype.initialize = function () {
 };
 
 SceneA.prototype.update = function () {
-    /*
+    
     if(gEngine.AudioClips.isBackgroundAudioPlaying() === false)
         gEngine.AudioClips.playBackgroundAudio(this.kBgm);
-    */
+    
     //this.mGame.getCurrentPlayer().update();
     this.mGame.update();
     this.mAllObjs.update(this.mGame.getCurrentPlayer().getMainCamera());
