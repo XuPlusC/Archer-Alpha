@@ -24,14 +24,12 @@ Player.eAttributes = Object.freeze({
     ]
 });
 
-function Player(game, index, aAllObjs, aAllObstacles, aDestroyable, aBackground) {
+function Player(game, index, aAllObjs, aAllObstacles, aDestroyable) {
     this.mMainCamera = null;
     this.mArmoryCamera = null;
     this.mHpBarCamera = null;
+    this.mTimerCamer = null;
     this.mMinimapCamera = null;
-
-    this.mBackground = aBackground;
-
     this.mArcher = null;
     this.mShootController = null;
     this.mArrow = null;
@@ -130,9 +128,10 @@ Player.prototype.initialize = function () {
         [1300, 420 + 30 * this.mIndex, 300, 30]
     );
     this.mMinimapCamera = new Camera(
-        [0, 0],
-        1000,
-        [1300, 510, 300, 150]
+        Player.eAttributes.eOrginPos[this.mIndex][0],
+        Player.eAttributes.eOrginPos[this.mIndex][1] + 200,
+        600,
+        [1300, 550, 300, 250]
     );
 
     this.mArcher = new Archer(
@@ -175,43 +174,9 @@ Player.prototype.update = function () {
     this.mHpBar.update();
     //this.miniMapUpdate();
 
-    if (this.mCurrentState === Player.ePlayerState.eShoot &&
-        this.mArrow && (
-            this.mArrow.getCurrentState() === Arrow.eArrowState.eHit ||
-            this.mArrow.getCurrentState() === Arrow.eArrowState.eMiss
-        )
-    ) {
-        if (this.mArrow.getCurrentState() === Arrow.eArrowState.eHit) {
-            this.mArcher.setToStand();
-            /*
-            if (this.mIndex === 0)
-                this.mGame.setCurrentPlayer(1);
-            else if (this.mIndex === 1)
-                this.mGame.setCurrentPlayer(0);
-            */
-            this.mArrow = null;
-            this.mCurrentState = Player.ePlayerState.eWait;
-        }
-        else if (this.mArrow.getCurrentState() === Arrow.eArrowState.eMiss) {
-            this.mArcher.setToStand();
-            /*
-            if (this.mIndex === 0)
-                this.mGame.setCurrentPlayer(1);
-            else if (this.mIndex === 1)
-                this.mGame.setCurrentPlayer(0);
-            */
-            this.mArrow = null;
-            this.mCurrentState = Player.ePlayerState.eWait;
-        }
-    }
 
-    // Dead Judgement
-    if (this.mArcher.getXform().getYPos() < -250 ||
-        this.mArcher.getXform().getXPos() < -500 ||
-        this.mArcher.getXform().getXPos() > 500 ||
-        this.mArcher.getHp() <= 0) {
+    if (this.mArcher.getHp() === 0) {
         this.mCurrentState = Player.ePlayerState.eDie;
-        /*
         if (this.mIndex === 0) {
             this.mGame.getPlayerAt(1).setState(Player.ePlayerState.eWin);
             this.mGame.setState(Game.eGameState.ePlayer2_Win);
@@ -220,14 +185,13 @@ Player.prototype.update = function () {
             this.mGame.getPlayerAt(0).setState(Player.ePlayerState.eWin);
             this.mGame.setState(Game.eGameState.ePlayer1_Win);
         }
-        */
     }
 };
 
 Player.prototype.keyControl = function () {
     switch (this.mCurrentState) {
         case Player.ePlayerState.eReady: {
-            if (this.mTime > 960) {
+            if (this.mTime > 600) {
                 this.resetTimer();
                 this.setState(Player.ePlayerState.eWait);
                 this.mArcher.setToStand();
@@ -241,9 +205,8 @@ Player.prototype.keyControl = function () {
             this.mTimer.TimeUpdate(this.mTime / 60);
 
             if (gEngine.Input.isKeyClicked(gEngine.Input.keys.C)) {
-                var ifShootSuccess = this.shoot();
-                if(ifShootSuccess)
-                    this.mCurrentState = Player.ePlayerState.eShoot;
+                this.shoot();
+                this.mCurrentState = Player.ePlayerState.eShoot;
             }
 
             this.moveCamera();
@@ -254,6 +217,20 @@ Player.prototype.keyControl = function () {
         }
         case Player.ePlayerState.eShoot: {
             this.traceArrow();
+            if (this.mArrow.getCurrentState() === Arrow.eArrowState.eHit) {
+                this.mArcher.setToStand();
+                if (this.mIndex === 0)
+                    this.mGame.setCurrentPlayer(1);
+                else if (this.mIndex === 1)
+                    this.mGame.setCurrentPlayer(0);
+            }
+            else if (this.mArrow.getCurrentState() === Arrow.eArrowState.eMiss) {
+                this.mArcher.setToStand();
+                if (this.mIndex === 0)
+                    this.mGame.setCurrentPlayer(1);
+                else if (this.mIndex === 1)
+                    this.mGame.setCurrentPlayer(0);
+            }
             break;
         }
         case Player.ePlayerState.eWait: {
@@ -277,18 +254,12 @@ Player.prototype.draw = function () {
     if (this.mCurrentState !== Player.ePlayerState.eWait) {
         camera = this.mMainCamera;
         camera.setupViewProjection();
-        this.mBackground.draw(camera);
         this.mAllObjs.draw(camera);
         this.mShootController.draw(camera);
 
         camera = this.mArmoryCamera;
         camera.setupViewProjection();
         this.mArmory.draw(camera);
-
-        camera = this.mMinimapCamera;
-        camera.setupViewProjection();
-        this.mBackground.draw(camera);
-        this.mAllObjs.draw(camera);
     }
 
     camera = this.mHpBarCamera;
@@ -305,50 +276,13 @@ Player.prototype.shoot = function () {
     var velocity = this.mShootController.getVelocity();
     var offset = new vec2.fromValues(1, 0);
     vec2.normalize(offset, velocity);
-    
-    var arrowchoose = this.mArmory.getCurrentArm();
-    console.log(arrowchoose);
-    switch (arrowchoose){
-        case -1:{
-            break;
-        }
-        case 0:{
-            this.mArrow = new Arrow(
-                pos[0] + offset[0] * 8, pos[1] + offset[1] * 8,
-                velocity[0], velocity[1],
-                Arrow.eAssets.eNormalArrowTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
-            );
-            this.mAllObjs.addToSet(this.mArrow);
-            break;
-        }
-        case 1:{
-            this.mArrow = new PaperPlane(
-                pos[0] + offset[0] * 8, pos[1] + offset[1] * 8,
-                velocity[0], velocity[1],
-                PaperPlane.eAssets.ePaperPlaneTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
-            );
-            this.mAllObjs.addToSet(this.mArrow);
-            break;
-        }
-        default:{
-            this.mArrow = new Arrow(
-                pos[0] + offset[0] * 8, pos[1] + offset[1] * 8,
-                velocity[0], velocity[1],
-                Arrow.eAssets.eNormalArrowTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
-            );
-            this.mAllObjs.addToSet(this.mArrow);
-            break;
-        }
-    }
-    if(arrowchoose === -1)
-        return 0;
-    else{
-        this.mArmory.useWeapon(1);
-        return 1;
-    }
+    this.mArrow = new Arrow(
+        pos[0] + offset[0] * 8, pos[1] + offset[1] * 8,
+        velocity[0], velocity[1],
+        Arrow.eAssets.eNormalArrowTexture,
+        this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+    );
+    this.mAllObjs.addToSet(this.mArrow);
 };
 
 Player.prototype.moveCamera = function () {
@@ -392,10 +326,8 @@ Player.prototype.resetCamera = function () {
 };
 
 Player.prototype.traceArrow = function () {
-    if (this.mArrow) {
-        this.mMainCamera.setWCCenter(this.mArrow.getXform().getXPos(), this.mArrow.getXform().getYPos());
-        this.mMainCamera.update();
-    }
+    this.mMainCamera.setWCCenter(this.mArrow.getXform().getXPos(), this.mArrow.getXform().getYPos());
+    this.mMainCamera.update();
 };
 
 Player.prototype.miniMapUpdate = function () {
