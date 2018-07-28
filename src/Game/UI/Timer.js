@@ -7,19 +7,17 @@
 ;
 function Timer() {
     this.mTime = 0;
-    this.mTimeShow = 16;
+    this.mTimeShow = 20;
     this.mTextbox = new FontRenderable(this.mTimeShow.toString());
     this.mTextbox.setColor([1, 0, 0, 1]);
     this.mTextbox.getXform().setPosition(0, 0);
     this.mTextbox.getXform().setSize(0, 0);
     this.mTextbox.setTextHeight(5);
-   
-};
 
-
+}
 Timer.prototype.setZero = function () {
     this.mTime = 0;
-    this.mTimeShow = 16;
+    this.mTimeShow = 20;
 };
 
 Timer.prototype.TimeUpdate = function (time) {
@@ -27,6 +25,10 @@ Timer.prototype.TimeUpdate = function (time) {
         this.mTime++;
         this.mTimeShow--;
     }
-    this.mTextbox.setText(this.mTimeShow.toString());
+    var zeroStr = "0";
+    if(this.mTimeShow < 10)
+        this.mTextbox.setText(zeroStr.concat(this.mTimeShow.toString()));
+    else
+        this.mTextbox.setText(this.mTimeShow.toString());
 };
 

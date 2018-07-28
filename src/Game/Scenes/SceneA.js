@@ -28,11 +28,8 @@ function SceneA(game, place, sky) {
 gEngine.Core.inheritPrototype(SceneA, Scene);
 
 SceneA.prototype.loadScene = function () {
-    gEngine.Textures.loadTexture(Arrow.eAssets.eNormalArrowTexture);
-    gEngine.Textures.loadTexture(PaperPlane.eAssets.ePaperPlaneTexture);
-    gEngine.Textures.loadTexture(Arm.eIconAssets.eNormalArrow);
-    gEngine.Textures.loadTexture(Arm.eIconAssets.ePaperPlane);
-    
+    gEngine.Textures.loadTexture(Player.eAssets.eViewFrameTexture);
+
     gEngine.Textures.loadTexture(this.kLifePotionTexture);
     gEngine.Textures.loadTexture(ShootController.eAssets.eShootDirArrowTexture);
 
@@ -43,10 +40,23 @@ SceneA.prototype.loadScene = function () {
     gEngine.Textures.loadTexture(Archer.eAssets.eWalkLeftTexture);
     gEngine.Textures.loadTexture(Archer.eAssets.eWalkRightTexture);
 
+    gEngine.Textures.loadTexture(Arrow.eAssets.eNormalArrowTexture);
+    gEngine.Textures.loadTexture(PaperPlane.eAssets.ePaperPlaneTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eBouncingArrowTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenArrowTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenTexture);
+
     gEngine.Textures.loadTexture(Armory.eAssets.eBackgroundTexture);
     gEngine.Textures.loadTexture(Armory.eAssets.eCellTexture);
     gEngine.Textures.loadTexture(Armory.eAssets.eCheckMarkTexture);
+
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eNormalArrow);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.ePaperPlane);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eBouncingArrow);
+
     gEngine.Textures.loadTexture(HpBar.eAssets.eRedHeart);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark1);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark2);
 
     switch (this.mPlace) {
         case Background.ePlace.eEasternCity: {
@@ -84,13 +94,12 @@ SceneA.prototype.loadScene = function () {
 };
 
 SceneA.prototype.unloadScene = function () {
-    gEngine.Textures.unloadTexture(Arrow.eAssets.eNormalArrowTexture);
-    gEngine.Textures.unloadTexture(PaperPlane.eAssets.ePaperPlaneTexture);
-    gEngine.Textures.unloadTexture(Arm.eIconAssets.eNormalArrow);
-    gEngine.Textures.unloadTexture(Arm.eIconAssets.ePaperPlane);
-    
+    gEngine.Textures.unloadTexture(Player.eAssets.eViewFrameTexture);
+
     gEngine.Textures.unloadTexture(this.kLifePotionTexture);
     gEngine.Textures.unloadTexture(ShootController.eAssets.eShootDirArrowTexture);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark1);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark2);
 
     gEngine.Textures.unloadTexture(Archer.eAssets.eShootLeftTexture);
     gEngine.Textures.unloadTexture(Archer.eAssets.eShootRightTexture);
@@ -99,9 +108,20 @@ SceneA.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(Archer.eAssets.eWalkLeftTexture);
     gEngine.Textures.unloadTexture(Archer.eAssets.eWalkRightTexture);
 
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eNormalArrowTexture);
+    gEngine.Textures.unloadTexture(PaperPlane.eAssets.ePaperPlaneTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eBouncingArrowTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenArrowTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenTexture);
+
     gEngine.Textures.unloadTexture(Armory.eAssets.eBackgroundTexture);
     gEngine.Textures.unloadTexture(Armory.eAssets.eCellTexture);
     gEngine.Textures.unloadTexture(Armory.eAssets.eCheckMarkTexture);
+
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eNormalArrow);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.ePaperPlane);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eBouncingArrow);
+
     gEngine.Textures.unloadTexture(HpBar.eAssets.eRedHeart);
 
     switch (this.mPlace) {
@@ -188,10 +208,10 @@ SceneA.prototype.initialize = function () {
 };
 
 SceneA.prototype.update = function () {
-    
+    /*
     if(gEngine.AudioClips.isBackgroundAudioPlaying() === false)
         gEngine.AudioClips.playBackgroundAudio(this.kBgm);
-    
+    */
     //this.mGame.getCurrentPlayer().update();
     this.mGame.update();
     this.mAllObjs.update(this.mGame.getCurrentPlayer().getMainCamera());
@@ -201,35 +221,41 @@ SceneA.prototype.update = function () {
 SceneA.prototype.draw = function () {
     gEngine.Core.clearCanvas([0.9, 0.9, 0.9, 1.0]); // clear to light gray
 
-    var i;
-    for (i = 0; i < this.mGame.getAllPlayers().length; i++) {
-        var player = this.mGame.getPlayerAt(i);
-        player.draw();
-    }
-
+    var player = this.mGame.getCurrentPlayer();
+    player.draw();
+    var opponent;
+    if (player.mIndex === 0)
+        opponent = this.mGame.getPlayerAt(1);
+    else if (player.mIndex === 1)
+        opponent = this.mGame.getPlayerAt(0);
+    /*
+    opponent.mHpBarCamera.setupViewProjection();
+    opponent.mHpBar.draw(opponent.mHpBarCamera);
+    */
+    opponent.draw();
     this.mCollisionInfos = [];
 };
 
 SceneA.prototype.createBounds = function () {
     var x = 15;
     for (x = -500; x <= 400; x += 100) {
-        this.platformAt(x, 0, 20, 0);
-        this.platformAt(x + 20, 0, 20, 0);
-        this.platformAt(x + 40, 0, 20, 0);
-        this.platformAt(x + 60, 0, 20, 0);
-        this.platformAt(x + 80, 0, 20, 0);
+        this.platformAt(x, -100, 20, 0);
+        this.platformAt(x + 20, -100, 20, 0);
+        this.platformAt(x + 40, -100, 20, 0);
+        this.platformAt(x + 60, -100, 20, 0);
+        this.platformAt(x + 80, -100, 20, 0);
     }
 
     for (x = -250; x <= 150; x += 100) {
-        this.platformAt(x, 30, 20, 0);
-        this.platformAt(x + 40, 30, 20, 0);
-        this.platformAt(x + 80, 30, 20, 0);
+        this.platformAt(x, -20, 20, 0);
+        this.platformAt(x + 40, -40, 20, 0);
+        this.platformAt(x + 80, -30, 20, 0);
     }
 
     for (x = -100; x <= 50; x += 50) {
-        this.platformAt(x, 60, 20, 0);
-        this.platformAt(x + 30, 60, 20, 0);
-        this.platformAt(x + 60, 60, 20, 0);
+        this.platformAt(x, -60, 20, 0);
+        this.platformAt(x + 30, -50, 20, 0);
+        this.platformAt(x + 60, -20, 20, 0);
     }
 };
 
