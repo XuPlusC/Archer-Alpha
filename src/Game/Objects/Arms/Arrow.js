@@ -9,7 +9,7 @@ Arrow.eArrowState = Object.freeze({
 
 Arrow.eAssets = Object.freeze({
     eNormalArrowTexture: "./assets/arrows/arrows_a.png",
-    ePaperPlaneTexture: "./assets/arrows/paperPlane.png",
+    ePaperPlaneTexture: "./assets/arrows/paperplane.png",
     eBouncingArrowTexture: "./assets/arrows/arrows_c.png",
     eScreamingChickenArrowTexture: "./assets/arrows/arrows_d.png",
     eScreamingChickenTexture: "./assets/arrows/screamingChicken.png"
