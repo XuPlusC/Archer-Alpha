@@ -49,7 +49,7 @@ function Destroyer(
     this.getRigidBody().setMass(0.1);
 
     this.mEffectTimer = 0;
-    this.mEffectTimeLimit = 30;
+    this.mEffectTimeLimit = 120;
     this.mEffectObj = [];
 
     this.mGenerateParticles = 1;
@@ -104,19 +104,15 @@ Destroyer.prototype.createParticle = function (atX, atY) {
 Destroyer.prototype.effectOnObstacle = function (obj) {
     this.mObstacle.removeFromSet(obj);
     this.mAllObjs.removeFromSet(obj);
+    this.mAllObjs.removeFromSet(this);
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mAllObjs.removeFromSet(this);
 };
 
-Destroyer.prototype.calculateDistance = function (posX, posY) {
-    return Math.sqrt(Math.pow(this.getXform().getXPos() - posX, 2)
-        + Math.pow(this.getXform().getYPos() - posY, 2));
-};
 
 Destroyer.prototype.effectOnArcher = function (obj) {
-    obj.loseHp(5);
+    obj.loseHp(3);
+    this.mAllObjs.removeFromSet(this);
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mAllObjs.removeFromSet(this);
 };

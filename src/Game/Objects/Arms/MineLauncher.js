@@ -71,18 +71,20 @@ MineLauncher.prototype.effectOnObstacle = function (obj) {
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.effectOnArcher = function () {
+    this.mAllObjs.removeFromSet(this);
+
     this.plantMine();
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.effectOnDestroyable = function (obj) {
+    this.mAllObjs.removeFromSet(this);
+
     if (obj instanceof LifePotion) {
         this.mMaster.addHp(1);
         this.mAllObjs.removeFromSet(obj);
@@ -100,7 +102,6 @@ MineLauncher.prototype.effectOnDestroyable = function (obj) {
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.plantMine = function () {
@@ -108,7 +109,7 @@ MineLauncher.prototype.plantMine = function () {
     var XPos = this.getXform().getXPos();
     var YPos = this.getXform().getYPos() + 10;
     mine = new Mine(
-        XPos, YPos, Mine.eAssets.eMineTexture, 1,
+        XPos, YPos, Mine.eAssets.eMineTexture, 3,
         this.mAllObjs, this.mObstacle, this.mDestroyable);
     this.mAllObjs.addToSet(mine);
     this.mDestroyable.addToSet(mine);

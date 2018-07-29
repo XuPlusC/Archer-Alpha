@@ -63,19 +63,24 @@ PaperPlane.prototype.createParticle = function(atX, atY) {
 };
 
 PaperPlane.prototype.effectOnObstacle = function (obj) {
-    this.transfer();
     this.mAllObjs.removeFromSet(this);
+    this.transfer();
+    this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mGenerateParticles = 0;
 };
 
 PaperPlane.prototype.effectOnArcher = function (obj) {
-    this.transfer();
     this.mAllObjs.removeFromSet(this);
+    this.transfer();
+    this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mGenerateParticles = 0;
 };
 
 PaperPlane.prototype.effectOnDestroyable = function (obj) {
-    this.transfer();
-    Arrow.prototype.effectOnDestroyable.call(this, obj);
     this.mAllObjs.removeFromSet(this);
+    this.transfer();
+    this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mGenerateParticles = 0;
 };
 
 
@@ -84,7 +89,4 @@ PaperPlane.prototype.transfer = function () {
     // this.getRigidBody().setRestitution(0);
     var pos = this.getXform().getPosition();
     this.mMaster.getArcher().getXform().setPosition(pos[0], pos[1] + 10);
-    this.mAllObjs.removeFromSet(this);
-    this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mGenerateParticles = 0;
 };
