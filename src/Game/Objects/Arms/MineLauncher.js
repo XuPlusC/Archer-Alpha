@@ -71,6 +71,7 @@ MineLauncher.prototype.effectOnObstacle = function (obj) {
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.effectOnArcher = function () {
@@ -78,6 +79,7 @@ MineLauncher.prototype.effectOnArcher = function () {
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.effectOnDestroyable = function (obj) {
@@ -98,6 +100,7 @@ MineLauncher.prototype.effectOnDestroyable = function (obj) {
 
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mAllObjs.removeFromSet(this);
 };
 
 MineLauncher.prototype.plantMine = function () {

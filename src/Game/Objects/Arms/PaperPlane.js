@@ -64,15 +64,18 @@ PaperPlane.prototype.createParticle = function(atX, atY) {
 
 PaperPlane.prototype.effectOnObstacle = function (obj) {
     this.transfer();
+    this.mAllObjs.removeFromSet(this);
 };
 
 PaperPlane.prototype.effectOnArcher = function (obj) {
     this.transfer();
+    this.mAllObjs.removeFromSet(this);
 };
 
 PaperPlane.prototype.effectOnDestroyable = function (obj) {
     this.transfer();
     Arrow.prototype.effectOnDestroyable.call(this, obj);
+    this.mAllObjs.removeFromSet(this);
 };
 
 

@@ -62,7 +62,6 @@ gEngine.Core.inheritPrototype(Destroyer, Arrow);
 Destroyer.prototype.update = function () {
     Arrow.prototype.update.call(this);
 
-
     if (this.mGenerateParticles === 1) {
         var p = this.createParticle(this.getXform().getXPos(), this.getXform().getYPos());
         this.mParticles.addToSet(p);
@@ -107,6 +106,7 @@ Destroyer.prototype.effectOnObstacle = function (obj) {
     this.mAllObjs.removeFromSet(obj);
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mAllObjs.removeFromSet(this);
 };
 
 Destroyer.prototype.calculateDistance = function (posX, posY) {
@@ -118,4 +118,5 @@ Destroyer.prototype.effectOnArcher = function (obj) {
     obj.loseHp(5);
     this.mGenerateParticles = 0;
     this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mAllObjs.removeFromSet(this);
 };
