@@ -27,9 +27,7 @@ gEngine.Input = (function () {
      * @type{enum} kKeys - Input keyCodes.
      */
     var kKeys = {
-        //enter
-        Enter: 13,
-        
+        Enter : 13,
         // arrows
         Left: 37,
         Up: 38,

@@ -58,7 +58,17 @@ function Armory(XPos, YPos) {
     this.addArm(newArm);
     newArm = new Arm(this.XPos, this.YPos, 1, 10, Arm.eIconAssets.ePaperPlane);
     this.addArm(newArm);
-    newArm = new Arm(this.XPos, this.YPos, 2, 3, Arm.eIconAssets.eBouncingArrow);
+    newArm = new Arm(this.XPos, this.YPos, 2, 10, Arm.eIconAssets.eBouncingArrow);
+    this.addArm(newArm);
+    newArm = new Arm(this.XPos, this.YPos, 3, 10, Arm.eIconAssets.eDestroyer);
+    this.addArm(newArm);
+    newArm = new Arm(this.XPos, this.YPos, 4, 10, Arm.eIconAssets.ePuncturingArrow);
+    this.addArm(newArm);
+    newArm = new Arm(this.XPos, this.YPos, 5, 10, Arm.eIconAssets.eShockWave);
+    this.addArm(newArm);
+    newArm = new Arm(this.XPos, this.YPos, 6, 10, Arm.eIconAssets.eScreamingChickenArrow);
+    this.addArm(newArm);
+    newArm = new Arm(this.XPos, this.YPos, 7, 10, Arm.eIconAssets.eMineLauncher);
     this.addArm(newArm);
 }
 
@@ -131,7 +141,7 @@ Armory.prototype.useArm = function (dec) {
     this.mArms[this.kCurrentArm].useArm(dec);
 };
 
-Armory.prototype.getMoreArm = function (inc) {
-    this.mArms[this.kCurrentArm].getMoreArm(inc);
+Armory.prototype.getMoreArm = function (armNum, armAmount) {
+    this.mArms[armNum].getMoreArm(armAmount);
 };
 

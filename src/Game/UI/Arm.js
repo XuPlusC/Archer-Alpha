@@ -1,13 +1,34 @@
 Arm.eMsgString = Object.freeze([
     "Arrow :",
     "PaperPlane :",
-    "Bounce :"
+    "Bounce :",
+    "Destroyer :",
+    "PuncturingArrow :",
+    "ShockWave :",
+    "ScreamingChick :",
+    "MineLauncher :"
 ]);
+
+Arm.eArmNum = Object.freeze({
+    eNormalArrow: 0,
+    ePaperPlane: 1,
+    eBouncingArrow: 2,
+    eDestroyer: 3,
+    ePuncturingArrow: 4,
+    eShockWave: 5,
+    eScreamingChickenArrow: 6,
+    eMineLauncher: 7
+});
 
 Arm.eIconAssets = Object.freeze({
     eNormalArrow: "assets/arrows/arrows_f.png",
-    ePaperPlane: "assets/arrows/paperplane.png",
-    eBouncingArrow: "assets/arrows/arrows_e.png"
+    ePaperPlane: "assets/armIcons/paperPlane.png",
+    eBouncingArrow: "assets/arrows/arrows_e.png",
+    eDestroyer: "assets/armIcons/hammerIcon.png",
+    ePuncturingArrow: "assets/armIcons/waterArrowIcon.png",
+    eShockWave: "assets/armIcons/shockWaveIcon.png",
+    eScreamingChickenArrow: "assets/armIcons/screamingChickenArrowIcon.png",
+    eMineLauncher: "assets/armIcons/mineLauncherIcon.png"
 });
 
 function Arm(XPos, YPos, order, currentNum, texture) {
@@ -28,7 +49,8 @@ function Arm(XPos, YPos, order, currentNum, texture) {
 }
 
 Arm.prototype.draw = function (aCamera) {
-    this.mIcon.draw(aCamera);
+    "assets/arrows/arrows_f.png",
+        this.mIcon.draw(aCamera);
     if (this.isActive)
         this.mMessageBox.draw(aCamera);
 };

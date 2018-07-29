@@ -12,13 +12,14 @@ function BouncingArrow(
         master
     );
 
+    this.getRigidBody().setMass(0.1);
+
     this.mBounceCount = 30;
 
     //particles
     this.mGenerateParticles = 1;
     this.mParticles = new ParticleGameObjectSet();
 }
-
 gEngine.Core.inheritPrototype(BouncingArrow, Arrow);
 
 BouncingArrow.prototype.update = function () {
@@ -33,7 +34,7 @@ BouncingArrow.prototype.update = function () {
 
 BouncingArrow.prototype.draw = function (aCamera) {
     this.mParticles.draw(aCamera);
-    GameObject.prototype.draw.call(this, aCamera);
+    Arrow.prototype.draw.call(this, aCamera);
 };
 
 BouncingArrow.prototype.createParticle = function (atX, atY) {

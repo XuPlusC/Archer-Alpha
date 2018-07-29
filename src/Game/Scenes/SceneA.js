@@ -11,8 +11,7 @@ function SceneA(game, place, sky) {
     this.kPlatformTexture = "assets/terrains/platform.png";
     this.kWallTexture = "assets/terrains/wall.png";
 
-    this.kBgm = "assets/sounds/bgm.mp3";
-    this.kShootCue = "assets/sounds/ShootSound.mp3";
+    this.kBgm = "assets/sounds/bgm.mp3";    
 
     //GameObjectSets
     this.mAllObjs = null;   //All GameObject
@@ -20,6 +19,7 @@ function SceneA(game, place, sky) {
     this.mDestroyable = null; // All objects that can be shot
 
     this.mLifePotion = null;
+    this.mBow = null;
 
     this.mBackground = null;
 
@@ -31,9 +31,8 @@ SceneA.prototype.loadScene = function () {
     gEngine.Textures.loadTexture(Player.eAssets.eViewFrameTexture);
 
     gEngine.Textures.loadTexture(this.kLifePotionTexture);
+    gEngine.Textures.loadTexture(Mine.eAssets.eMineTexture);
     gEngine.Textures.loadTexture(ShootController.eAssets.eShootDirArrowTexture);
-    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark1);
-    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark2);
 
     gEngine.Textures.loadTexture(Archer.eAssets.eShootLeftTexture);
     gEngine.Textures.loadTexture(Archer.eAssets.eShootRightTexture);
@@ -45,8 +44,12 @@ SceneA.prototype.loadScene = function () {
     gEngine.Textures.loadTexture(Arrow.eAssets.eNormalArrowTexture);
     gEngine.Textures.loadTexture(Arrow.eAssets.ePaperPlaneTexture);
     gEngine.Textures.loadTexture(Arrow.eAssets.eBouncingArrowTexture);
-    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenArrowTexture);
-    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eDestroyerTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.ePuncturingArrowTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eShockWaveTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenArrowLeftTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eScreamingChickenArrowRightTexture);
+    gEngine.Textures.loadTexture(Arrow.eAssets.eMineLauncherTexture);
 
     gEngine.Textures.loadTexture(Armory.eAssets.eBackgroundTexture);
     gEngine.Textures.loadTexture(Armory.eAssets.eCellTexture);
@@ -55,8 +58,18 @@ SceneA.prototype.loadScene = function () {
     gEngine.Textures.loadTexture(Arm.eIconAssets.eNormalArrow);
     gEngine.Textures.loadTexture(Arm.eIconAssets.ePaperPlane);
     gEngine.Textures.loadTexture(Arm.eIconAssets.eBouncingArrow);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eDestroyer);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.ePuncturingArrow);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eShockWave);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eScreamingChickenArrow);
+    gEngine.Textures.loadTexture(Arm.eIconAssets.eMineLauncher);
 
+    gEngine.Textures.loadTexture(Bow.eAssets.eBowSetSpriteTexture);
+
+    gEngine.Textures.loadTexture(HpBar.eAssets.eBackgroundTexture);
     gEngine.Textures.loadTexture(HpBar.eAssets.eRedHeart);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark1);
+    gEngine.Textures.loadTexture(PlayerMark.eAssets.eMark2);
 
     switch (this.mPlace) {
         case Background.ePlace.eEasternCity: {
@@ -88,19 +101,21 @@ SceneA.prototype.loadScene = function () {
     gEngine.Textures.loadTexture(this.kWallTexture);
 
     gEngine.Textures.loadTexture("assets/particles/Particle2.png");
+    gEngine.Textures.loadTexture("assets/particles/emoji.png");
+
 
     gEngine.AudioClips.loadAudio(this.kBgm);
-    gEngine.AudioClips.loadAudio(this.kShootCue);
+    gEngine.AudioClips.loadAudio(Player.eAudio.eShootCue);
+    gEngine.AudioClips.loadAudio(ScreamingChickenArrow.eAudio.eChicken);
+    gEngine.AudioClips.loadAudio(Mine.eAudio.eExplode);
 };
 
 SceneA.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(Player.eAssets.eViewFrameTexture);
 
     gEngine.Textures.unloadTexture(this.kLifePotionTexture);
+    gEngine.Textures.unloadTexture(Mine.eAssets.eMineTexture);
     gEngine.Textures.unloadTexture(ShootController.eAssets.eShootDirArrowTexture);
-    gEngine.Textures.unloadTexture(PlayerMark.eAssets.eMark1);
-    gEngine.Textures.unloadTexture(PlayerMark.eAssets.eMark2);
-
 
     gEngine.Textures.unloadTexture(Archer.eAssets.eShootLeftTexture);
     gEngine.Textures.unloadTexture(Archer.eAssets.eShootRightTexture);
@@ -112,8 +127,12 @@ SceneA.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(Arrow.eAssets.eNormalArrowTexture);
     gEngine.Textures.unloadTexture(Arrow.eAssets.ePaperPlaneTexture);
     gEngine.Textures.unloadTexture(Arrow.eAssets.eBouncingArrowTexture);
-    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenArrowTexture);
-    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eDestroyerTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.ePuncturingArrowTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eShockWaveTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenArrowLeftTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eScreamingChickenArrowRightTexture);
+    gEngine.Textures.unloadTexture(Arrow.eAssets.eMineLauncherTexture);
 
     gEngine.Textures.unloadTexture(Armory.eAssets.eBackgroundTexture);
     gEngine.Textures.unloadTexture(Armory.eAssets.eCellTexture);
@@ -122,8 +141,18 @@ SceneA.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(Arm.eIconAssets.eNormalArrow);
     gEngine.Textures.unloadTexture(Arm.eIconAssets.ePaperPlane);
     gEngine.Textures.unloadTexture(Arm.eIconAssets.eBouncingArrow);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eDestroyer);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.ePuncturingArrow);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eShockWave);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eScreamingChickenArrow);
+    gEngine.Textures.unloadTexture(Arm.eIconAssets.eMineLauncher);
 
+    gEngine.Textures.unloadTexture(Bow.eAssets.eBowSetSpriteTexture);
+
+    gEngine.Textures.unloadTexture(HpBar.eAssets.eBackgroundTexture);
     gEngine.Textures.unloadTexture(HpBar.eAssets.eRedHeart);
+    gEngine.Textures.unloadTexture(PlayerMark.eAssets.eMark1);
+    gEngine.Textures.unloadTexture(PlayerMark.eAssets.eMark2);
 
     switch (this.mPlace) {
         case Background.ePlace.eEasternCity: {
@@ -155,9 +184,11 @@ SceneA.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(this.kWallTexture);
 
     gEngine.Textures.unloadTexture("assets/particles/Particle2.png");
+    gEngine.Textures.unloadTexture("assets/particles/emoji.png");
 
-    gEngine.AudioClips.loadAudio(this.kBgm);
-    gEngine.AudioClips.loadAudio(this.kShootCue);
+    gEngine.AudioClips.unloadAudio(this.kBgm);
+    gEngine.AudioClips.unloadAudio(Mine.eAudio.eExplode);
+    gEngine.AudioClips.unloadAudio(ScreamingChickenArrow.eAudio.eChicken);
     gEngine.AudioClips.stopBackgroundAudio(this.kBgm);
 
     var nextLevel;
@@ -203,16 +234,27 @@ SceneA.prototype.initialize = function () {
     this.mAllObjs.addToSet(player.getArcher());
     this.mAllObstacles.addToSet(player.getArcher());
 
-    this.mLifePotion = new LifePotion(10, 70, this.kLifePotionTexture);
+    this.mLifePotion = new LifePotion(10, 70, this.kLifePotionTexture, 3,
+                                    this.mAllObjs, this.mAllObstacles, this.mDestroyable);
     this.mAllObjs.addToSet(this.mLifePotion);
     this.mDestroyable.addToSet(this.mLifePotion);
+
+    this.mBow = new Bow(0, -90, Arm.eArmNum.ePaperPlane, 10, 50);
+    this.mAllObjs.addToSet(this.mBow);
+    this.mDestroyable.addToSet(this.mBow);
+
+    this.mBow = new Bow(30, -90, Arm.eArmNum.ePaperPlane, 10, 50);
+    this.mAllObjs.addToSet(this.mBow);
+    this.mDestroyable.addToSet(this.mBow);
+
+    console.log(this.mAllObjs);
 };
 
 SceneA.prototype.update = function () {
-    /*
+    
     if(gEngine.AudioClips.isBackgroundAudioPlaying() === false)
         gEngine.AudioClips.playBackgroundAudio(this.kBgm);
-    */
+    
     //this.mGame.getCurrentPlayer().update();
     this.mGame.update();
     this.mAllObjs.update(this.mGame.getCurrentPlayer().getMainCamera());

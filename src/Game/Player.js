@@ -4,6 +4,10 @@ Player.eAssets = Object.freeze({
     eViewFrameTexture: "assets/UI/viewFrame.png"
 });
 
+Player.eAudio = Object.freeze({
+    eShootCue : "assets/sounds/ShootSound.mp3"
+});
+
 Player.ePlayerState = Object.freeze({
     eWait: 0,
     eReady: 1,
@@ -47,7 +51,7 @@ function Player(game, index, aAllObjs, aAllObstacles, aDestroyable, aBackground)
     this.mHpBar = null;
     this.mTimer = null;
     this.mTime = 0;
-    this.mPlayerMark = null;
+    this.mMark = null;
 
     this.mAllObjs = aAllObjs;
     this.mObstacle = aAllObstacles;
@@ -56,8 +60,9 @@ function Player(game, index, aAllObjs, aAllObstacles, aDestroyable, aBackground)
     this.mGame = game;
     this.mIndex = index;
     this.mCurrentState = Player.ePlayerState.eNotInitialize;
+    this.mTurns = null;
 
-    this.mBuff = null;
+    this.mBuffSet = null;
 
     this.initialize();
 }
@@ -114,6 +119,10 @@ Player.prototype.getHpBar = function () {
     return this.mHpBar;
 };
 
+Player.prototype.getSpaceLimit = function () {
+    return this.mGame.getSpaceLimit();
+};
+
 Player.prototype.initialize = function () {
     this.mMainCamera = new Camera(
         vec2.fromValues(
@@ -129,7 +138,7 @@ Player.prototype.initialize = function () {
             Player.eAttributes.eArmoryPos[this.mIndex][1]
         ),
         60,
-        [1200, 0, 400, 560]
+        [1200, 40, 400, 560]
     );
     this.mHpBarCamera = new Camera(
         vec2.fromValues(
@@ -154,7 +163,8 @@ Player.prototype.initialize = function () {
         Player.eAttributes.eOrginPos[this.mIndex][0],
         Player.eAttributes.eOrginPos[this.mIndex][1],
         12, 14,
-        this.mAllObjs, this.mAllObstacles, this.mDestroyable
+        this.mAllObjs, this.mAllObstacles, this.mDestroyable,
+        this
     );
     this.mShootController = new ShootController(
         Player.eAttributes.eOrginPos[this.mIndex][0],
@@ -175,14 +185,24 @@ Player.prototype.initialize = function () {
     this.mTimer = new Timer();
     this.mTimer.mTextbox.getXform().setPosition(1100, 1100);
     this.mTimer.mTextbox.getXform().setSize(5, 5);
-    
-    this.mPlayerMark = new PlayerMark(this.mIndex + 1);
+
+    this.mMark = new PlayerMark(this.mIndex + 1);
+
+    this.mBuffSet = [];
 
     this.mCurrentState = Player.ePlayerState.eWait;
 };
 
 Player.prototype.update = function () {
+    var i;
+    for (i = 0; i < this.mBuffSet.length; i++)
+        this.mBuffSet[i].update(this.mTurns);
+
     this.keyControl();
+    this.mMark.update(
+        this.mArcher.getXform().getPosition()[0],
+        this.mArcher.getXform().getPosition()[1]
+    );
     this.mShootController.update(
         this.mArcher.getXform().getPosition()[0],
         this.mArcher.getXform().getPosition()[1],
@@ -190,8 +210,20 @@ Player.prototype.update = function () {
     );
     this.mArmory.update();
     this.mHpBar.update();
-    this.mPlayerMark.update( this.mArcher.getXform().getPosition()[0], this.mArcher.getXform().getPosition()[1]);
-    
+
+    // for arrows' effect
+    if (this.mArrow && this.mArrow.getCurrentState() === Arrow.eArrowState.eHit)
+        this.mArrow.update();
+    if (this.mArrow && this.mArrow instanceof PuncturingArrow)
+        this.mArrow.update();
+    /*
+    if (this.mArrow && this.mArrow instanceof PuncturingArrow)
+        this.mArrow.update();
+    if (this.mArrow && this.mArrow instanceof PaperPlane && this.mArrow.getCurrentState() === Arrow.eArrowState.eHit)
+        this.mArrow.update();
+    if (this.mArrow && this.mArrow instanceof ScreamingChickenArrow && this.mArrow.isChicken())
+        this.mArrow.update();
+        */
     if (this.mCurrentState === Player.ePlayerState.eShoot &&
         this.mArrow && (
             this.mArrow.getCurrentState() === Arrow.eArrowState.eHit ||
@@ -215,7 +247,8 @@ Player.prototype.update = function () {
     }
 
     // Dead Judgement
-    if (this.mArcher.getXform().getYPos() < -1250 ||
+    if (this.mArcher.getXform().getYPos() > 250 ||
+        this.mArcher.getXform().getYPos() < -125 ||
         this.mArcher.getXform().getXPos() < -250 ||
         this.mArcher.getXform().getXPos() > 250 ||
         this.mArcher.getHp() <= 0) {
@@ -275,9 +308,58 @@ Player.prototype.draw = function () {
         camera = this.mMainCamera;
         camera.setupViewProjection();
         this.mBackground.draw(camera);
+
+        // space limit display
+        var spaceLimitSet = [];
+        var spaceLimit = this.mGame.getSpaceLimit();
+        var width = 250 - spaceLimit.rightLimit;
+        var height = 250 - spaceLimit.upLimit;
+        var r = new Renderable();
+        r.setColor([1, 0, 0, 0.2]);
+        r.getXform().setSize(2 * width, 500);
+        r.getXform().setPosition(250, 0);
+        spaceLimitSet.push(r);
+        r = new Renderable();
+        r.setColor([1, 0, 0, 0.2]);
+        r.getXform().setSize(2 * width, 500);
+        r.getXform().setPosition(-250, 0);
+        spaceLimitSet.push(r);
+        r = new Renderable();
+        r.setColor([1, 0, 0, 0.2]);
+        r.getXform().setSize(2 * (250 - width), 2 * height);
+        r.getXform().setPosition(0, 250);
+        spaceLimitSet.push(r);
+        var i;
+        for (i = 0; i < spaceLimitSet.length; i++)
+            spaceLimitSet[i].draw(camera);
+
+        // for puncturing arrow
+        if (this.mArrow && this.mArrow instanceof PuncturingArrow) {
+            this.mArrow.draw(camera);
+        }
+        // for screaming chicken arrow
+        if (this.mArrow && this.mArrow instanceof ScreamingChickenArrow && this.mArrow.isChicken()) {
+            this.mArrow.draw(camera);
+        }
+
+        /*
+        var spaceLimit = this.mGame.getSpaceLimit();
+        var spaceLimitRenderable = new Renderable();
+        spaceLimitRenderable.setColor([1, 0, 0, 0]);
+        spaceLimitRenderable.getXform().setPosition(
+            (spaceLimit.rightLimit + spaceLimit.leftLimit) / 2,
+            (spaceLimit.upLimit + spaceLimit.rightLimit) / 2
+        );
+        spaceLimitRenderable.getXform().setSize(
+            spaceLimit.rightLimit - spaceLimit.leftLimit,
+            spaceLimit.upLimit - spaceLimit.rightLimit
+        );
+        spaceLimitRenderable.draw(camera);
+        */
+
         this.mAllObjs.draw(camera);
+        this.mMark.draw(camera);
         this.mShootController.draw(camera);
-        this.mPlayerMark.draw(camera);
 
         /*
         if (this.mArrow instanceof ScreamingChickenArrow &&
@@ -297,6 +379,10 @@ Player.prototype.draw = function () {
         camera = this.mMinimapCamera;
         camera.setupViewProjection();
         this.mBackground.draw(camera);
+
+        // space limit display
+        for (i = 0; i < spaceLimitSet.length; i++)
+            spaceLimitSet[i].draw(camera);
 
         this.mSelfMark.getXform().setPosition(
             this.mArcher.getXform().getXPos(),
@@ -321,16 +407,24 @@ Player.prototype.draw = function () {
 
         this.mAllObjs.draw(camera);
 
+        // for puncturing arrow
+        if (this.mArrow && this.mArrow instanceof PuncturingArrow) {
+            this.mArrow.draw(camera);
+        }
+        // for screaming chicken arrow
+        if (this.mArrow && this.mArrow instanceof ScreamingChickenArrow && this.mArrow.isChicken()) {
+            this.mArrow.draw(camera);
+        }
+
         var WCcenter = this.mMainCamera.getWCCenter();
         this.mViewFrame.getXform().setPosition(WCcenter[0], WCcenter[1]);
         this.mViewFrame.getXform().setSize(this.mMainCamera.getWCWidth(), this.mMainCamera.getWCHeight());
         this.mViewFrame.draw(camera);
     }
 
+    // always display HP and PlayerMark
     this.mHpBarCamera.setupViewProjection();
     this.mHpBar.draw(this.mHpBarCamera);
-
-    // always display HP
 
     if (this.mCurrentState === Player.ePlayerState.eReady) {
         camera = new Camera(
@@ -348,6 +442,8 @@ Player.prototype.setState = function (state) {
 };
 
 Player.prototype.shoot = function () {
+    gEngine.AudioClips.playACue(Player.eAudio.eShootCue);
+    
     var pos = this.mArcher.getXform().getPosition();
     var velocity = this.mShootController.getVelocity();
     var offset = new vec2.fromValues(1, 0);
@@ -363,7 +459,7 @@ Player.prototype.shoot = function () {
                 pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
                 velocity[0], velocity[1],
                 Arrow.eAssets.eNormalArrowTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
             );
             break;
         }
@@ -371,7 +467,7 @@ Player.prototype.shoot = function () {
             this.mArrow = new PaperPlane(
                 pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
                 velocity[0], velocity[1],
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
             );
             break;
         }
@@ -379,16 +475,47 @@ Player.prototype.shoot = function () {
             this.mArrow = new BouncingArrow(
                 pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
                 velocity[0], velocity[1],
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
             );
             break;
         }
         case 3: {
+            this.mArrow = new Destroyer(
+                pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
+                velocity[0], velocity[1],
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
+            );
+            break;
+        }
+        case 4: {
+            this.mArrow = new PuncturingArrow(
+                pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
+                velocity[0], velocity[1],
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
+            );
+            break;
+        }
+        case 5: {
+            this.mArrow = new ShockWave(
+                pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
+                velocity[0], velocity[1],
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
+            );
+            break;
+        }
+        case 6: {
             this.mArrow = new ScreamingChickenArrow(
                 pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
                 velocity[0], velocity[1],
-                Arrow.eAssets.eBouncingArrowTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
+            );
+            break;
+        }
+        case 7: {
+            this.mArrow = new MineLauncher(
+                pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
+                velocity[0], velocity[1],
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
             );
             break;
         }
@@ -396,15 +523,15 @@ Player.prototype.shoot = function () {
             this.mArrow = new Arrow(
                 pos[0] + offset[0] * 10, pos[1] + offset[1] * 10,
                 velocity[0], velocity[1],
-                BouncingArrow.eAssets.eNormalArrowTexture,
-                this.mAllObjs, this.mObstacle, this.mDestroyable, this.mArcher
+                this.mAllObjs, this.mObstacle, this.mDestroyable, this
             );
             break;
         }
     }
 
-    if (this.mArrow)
+    if (this.mArrow && !(this.mArrow instanceof PuncturingArrow)) {
         this.mAllObjs.addToSet(this.mArrow);
+    }
 
     if (armChoice === -1)
         return 0;
@@ -458,7 +585,7 @@ Player.prototype.resetCamera = function () {
     if (cameraCenterY < -65)
         cameraCenterY = -65;
     var i;
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 20; i++) {
         this.mMainCamera.setWCCenter(cameraCenterX, cameraCenterY);
         this.mMainCamera.update();
     }
@@ -484,4 +611,30 @@ Player.prototype.traceArrow = function () {
 Player.prototype.resetTimer = function () {
     this.mTime = 0;
     this.mTimer.setZero();
+};
+
+Player.prototype.getMoreArm = function (armNum, armAmount) {
+    this.mArmory.getMoreArm(armNum, armAmount);
+};
+
+Player.prototype.incTurns = function () {
+    this.mTurns++;
+    var spaceLimit = this.mGame.getSpaceLimit();
+    if (this.mArcher.getXform().getYPos() > spaceLimit.upLimit ||
+        this.mArcher.getXform().getYPos() < spaceLimit.downLimit ||
+        this.mArcher.getXform().getXPos() < spaceLimit.leftLimit ||
+        this.mArcher.getXform().getXPos() > spaceLimit.rightLimit) {
+        if (this.mIndex === 0 && this.mTurns % 2 === 1) {
+            this.mArcher.loseHp(2);
+        }
+        else if (this.mIndex === 1 && this.mTurns % 2 === 0) {
+            this.mArcher.loseHp(2);
+        }
+    }
+};
+
+Player.prototype.addBuff = function (buff) {
+    buff.initialize(this, this.mTurns, 5);
+    this.mBuffSet.push(buff);
+    console.log(this.mBuffSet);
 };

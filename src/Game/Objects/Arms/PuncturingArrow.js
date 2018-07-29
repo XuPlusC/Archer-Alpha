@@ -1,4 +1,6 @@
-function PaperPlane(
+"use strict";
+
+function PuncturingArrow(
     posX, posY, vX, vY,
     aAllObjs, aObstacle, aDestroyable,
     master
@@ -6,22 +8,30 @@ function PaperPlane(
     Arrow.call(
         this,
         posX, posY, vX, vY,
-        Arrow.eAssets.ePaperPlaneTexture,
+        Arrow.eAssets.ePuncturingArrowTexture,
         aAllObjs, aObstacle, aDestroyable,
         master
     );
 
+    this.mVx = vX;
+    this.mVy = vY;
+
+    this.mHitSet = new GameObjectSet();
+    this.mDamage = 5;
+
     //particles
     this.mGenerateParticles = 1;
     this.mParticles = new ParticleGameObjectSet();
-
-    //this.toggleDrawRigidShape(); // Draw RigidShape
 }
 
-gEngine.Core.inheritPrototype(PaperPlane, Arrow);
+gEngine.Core.inheritPrototype(PuncturingArrow, Arrow);
 
-PaperPlane.prototype.update = function () {
+
+PuncturingArrow.prototype.update = function () {
     Arrow.prototype.update.call(this);
+
+//    console.log(this);
+    this.getRigidBody().setVelocity(this.mVx, this.mVy);
 
     if (this.mGenerateParticles === 1) {
         var p = this.createParticle(this.getXform().getXPos(), this.getXform().getYPos());
@@ -30,15 +40,15 @@ PaperPlane.prototype.update = function () {
     gEngine.ParticleSystem.update(this.mParticles);
 };
 
-PaperPlane.prototype.draw = function (aCamera) {
+PuncturingArrow.prototype.draw = function (aCamera) {
     this.mParticles.draw(aCamera);
     Arrow.prototype.draw.call(this, aCamera);
 };
 
-PaperPlane.prototype.createParticle = function(atX, atY) {
+PuncturingArrow.prototype.createParticle = function (atX, atY) {
     var life = 30 + Math.random() * 200;
     var p = new ParticleGameObject("assets/particles/Particle2.png", atX, atY, life);
-//    console.log(p);
+
     p.getRenderable().setColor([1, 1, 1, 1]);
 
     // size of the particle
@@ -62,26 +72,30 @@ PaperPlane.prototype.createParticle = function(atX, atY) {
     return p;
 };
 
-PaperPlane.prototype.effectOnObstacle = function (obj) {
-    this.transfer();
+PuncturingArrow.prototype.effectOnObstacle = function (obj) {
+    if (!this.mHitSet.hasObject(obj)) {
+        this.mHitSet.addToSet(obj);
+        this.mDamage--;
+    }
 };
 
-PaperPlane.prototype.effectOnArcher = function (obj) {
-    this.transfer();
-};
-
-PaperPlane.prototype.effectOnDestroyable = function (obj) {
-    this.transfer();
-    Arrow.prototype.effectOnDestroyable.call(this, obj);
-};
-
-
-PaperPlane.prototype.transfer = function () {
-    // this.getRigidBody().setInertia(0);
-    // this.getRigidBody().setRestitution(0);
-    var pos = this.getXform().getPosition();
-    this.mMaster.getArcher().getXform().setPosition(pos[0], pos[1] + 10);
-    this.mAllObjs.removeFromSet(this);
+PuncturingArrow.prototype.effectOnArcher = function (obj) {
+    if (obj === this.mMaster) {
+        this.mMaster.loseHp(1);
+    }
+    else {
+        obj.loseHp(this.mDamage);
+    }
     this.mCurrentState = Arrow.eArrowState.eHit;
-    this.mGenerateParticles = 0;
+};
+
+PuncturingArrow.prototype.effectOnDestroyable = function (obj) {
+    if (obj instanceof LifePotion) {
+        this.mMaster.getArcher().addHp(1);
+    }
+    else if (obj instanceof Bow) {
+        this.mMaster.getMoreArm(obj.getArmNum(), obj.getArmAmount());
+    }
+    this.mAllObjs.removeFromSet(obj);
+    this.mDestroyable.removeFromSet(obj);
 };
