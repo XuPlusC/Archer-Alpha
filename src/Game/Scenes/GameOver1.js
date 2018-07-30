@@ -22,6 +22,9 @@ function GameOver1(game) {
     this.mNext = null;
     //option
     this.mOption = 0;
+    
+    this.msPosX = 0;
+    this.msPosY = 0;
 }
 
 gEngine.Core.inheritPrototype(GameOver1, Scene);
@@ -41,8 +44,15 @@ GameOver1.prototype.unloadScene = function () {
     gEngine.Textures.unloadTexture(this.kQuit);
     gEngine.Textures.unloadTexture(this.kBackground);
     gEngine.Textures.unloadTexture(this.kP1Win);
-    if(this.mOption === 0)
-        this.mNext = new SceneA(this.mGame, Background.ePlace.eOutskirts, Background.eSky.eCloudy);
+    if (this.mOption === 0) {
+        var skyRandom = Math.floor(Game.random(0, 1.8));
+        var placeRandom = Math.floor(Game.random(0, 2.8));
+
+        var nextLevel = new SceneA(this.mGame, placeRandom, skyRandom);
+        console.log(nextLevel);
+        gEngine.Core.startScene(nextLevel);
+        this.mGame.mCurrentScene = nextLevel;
+    }
     else
         this.mNext = new MyMenu(this.mGame);
     gEngine.Core.startScene(this.mNext);
@@ -87,21 +97,43 @@ GameOver1.prototype.initialize = function () {
 
 GameOver1.prototype.update = function () {
     this.mAllObject.update();
-
-    if (this.mOption === 0 && gEngine.Input.isKeyClicked(gEngine.Input.keys.S)) {
-        this.mRestart.getXform().setSize(80, 20);
-        this.mQuit.getXform().setSize(100, 25);
+    
+    if (this.mCamera.isMouseInViewport()) {
+        this.msPosX = this.mCamera.mouseWCX();
+        this.msPosY = this.mCamera.mouseWCY();
+        if (gEngine.Input.isButtonClicked(gEngine.Input.mouseButton.Left)){
+                gEngine.GameLoop.stop();
+        }
+    }
+    
+    if (this.mOption == 0 && gEngine.Input.isKeyClicked(gEngine.Input.keys.S)) {
         this.mOption = 1;
     }
-
-    if (this.mOption === 1 && gEngine.Input.isKeyClicked(gEngine.Input.keys.W)) {
-        this.mQuit.getXform().setSize(80, 20);
-        this.mRestart.getXform().setSize(100, 25);
+    if (this.mOption == 1 && gEngine.Input.isKeyClicked(gEngine.Input.keys.W)) {
         this.mOption = 0;
     }
+    
+    if(this.mOption !== 0 && this.mCamera.isMouseInViewport() && this.msPosX >= 60 && this.msPosX <= 95
+            && this.msPosY >= 20 && this.msPosY <= 30){
+        this.mOption = 0;
+    }
+    else if(this.mOption !== 1 && this.mCamera.isMouseInViewport() && this.msPosX >= 60 && this.msPosX <= 95
+            && this.msPosY >= 5 && this.msPosY <= 15){
+        this.mOption = 1;
+    }
+    
 
     if (gEngine.Input.isKeyPressed(gEngine.Input.keys.Space)) {
         gEngine.GameLoop.stop();
+    }
+    
+    if (this.mOption === 0 ) {
+        this.mQuit.getXform().setSize(80, 20);
+        this.mRestart.getXform().setSize(100, 25);        
+    }
+    else if (this.mOption === 1 ) {
+        this.mRestart.getXform().setSize(80, 20);
+        this.mQuit.getXform().setSize(100, 25);
     }
 };
 

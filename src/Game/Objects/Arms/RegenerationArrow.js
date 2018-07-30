@@ -1,6 +1,4 @@
-"use strict";
-
-function PuncturingArrow(
+function RegenerationArrow(
     posX, posY, vX, vY,
     aAllObjs, aObstacle, aDestroyable,
     master
@@ -8,29 +6,28 @@ function PuncturingArrow(
     Arrow.call(
         this,
         posX, posY, vX, vY,
-        Arrow.eAssets.ePuncturingArrowTexture,
+        Arrow.eAssets.eRegenerationArrowTexture,
         aAllObjs, aObstacle, aDestroyable,
         master
     );
 
-    this.mVx = vX;
-    this.mVy = vY;
-
-    this.mHitSet = new GameObjectSet();
-    this.mDamage = 4;
+    this.mArrow.setColor([1, 1, 1, 0]);
+    this.mArrow.getXform().setSize(8, 8);
+    this.mArrow.setSpriteSequence(128, 0, 128, 128, 4, 0);
+    this.mArrow.setAnimationType(SpriteAnimateRenderable.eAnimationType.eAnimateSwing);
+    this.mArrow.setAnimationSpeed(10);
 
     //particles
     this.mGenerateParticles = 1;
     this.mParticles = new ParticleGameObjectSet();
+
+    //this.toggleDrawRigidShape(); // Draw RigidShape
 }
 
-gEngine.Core.inheritPrototype(PuncturingArrow, Arrow);
+gEngine.Core.inheritPrototype(RegenerationArrow, Arrow);
 
-
-PuncturingArrow.prototype.update = function () {
+RegenerationArrow.prototype.update = function () {
     Arrow.prototype.update.call(this);
-
-    this.getRigidBody().setVelocity(this.mVx, this.mVy);
 
     if (this.mGenerateParticles === 1) {
         var p = this.createParticle(this.getXform().getXPos(), this.getXform().getYPos());
@@ -39,14 +36,14 @@ PuncturingArrow.prototype.update = function () {
     gEngine.ParticleSystem.update(this.mParticles);
 };
 
-PuncturingArrow.prototype.draw = function (aCamera) {
+RegenerationArrow.prototype.draw = function (aCamera) {
     this.mParticles.draw(aCamera);
     Arrow.prototype.draw.call(this, aCamera);
 };
 
-PuncturingArrow.prototype.createParticle = function (atX, atY) {
+RegenerationArrow.prototype.createParticle = function(atX, atY) {
     var life = 30 + Math.random() * 200;
-    var p = new ParticleGameObject(ParticleSystem.eAssets.eSnow, atX, atY, life);
+    var p = new ParticleGameObject(ParticleSystem.eAssets.eHeart, atX, atY, life);
 
     p.getRenderable().setColor([1, 1, 1, 1]);
 
@@ -71,25 +68,22 @@ PuncturingArrow.prototype.createParticle = function (atX, atY) {
     return p;
 };
 
-PuncturingArrow.prototype.effectOnObstacle = function (obj) {
-    if (!this.mHitSet.hasObject(obj)) {
-        this.mHitSet.addToSet(obj);
-        if (this.mDamage >= 2)
-            this.mDamage--;
-    }
+RegenerationArrow.prototype.effectOnObstacle = function (obj) {
+    this.mAllObjs.removeFromSet(this);
+    this.mCurrentState = Arrow.eArrowState.eHit;
+    this.mGenerateParticles = 0;
 };
 
-PuncturingArrow.prototype.effectOnArcher = function (obj) {
-    if (obj === this.mMaster) {
-        this.mMaster.loseHp(1);
-    }
-    else if (!this.mHitSet.hasObject(obj)) {
-        obj.loseHp(this.mDamage);
-        this.mHitSet.addToSet(obj);
-    }
+RegenerationArrow.prototype.effectOnArcher = function (obj) {
+    this.mAllObjs.removeFromSet(this);
+    obj.addHp(1);
+    this.mCurrentState = Arrow.eArrowState.eHit;
+    this.regeneration(obj);
+    this.mGenerateParticles = 0;
 };
 
-PuncturingArrow.prototype.effectOnDestroyable = function (obj) {
+RegenerationArrow.prototype.effectOnDestroyable = function (obj) {
+    this.mAllObjs.removeFromSet(this);
     if (obj instanceof LifePotion) {
         this.mMaster.getArcher().addHp(1);
         this.mAllObjs.removeFromSet(obj);
@@ -103,10 +97,10 @@ PuncturingArrow.prototype.effectOnDestroyable = function (obj) {
     else if (obj instanceof Mine) {
         obj.explode();
     }
+    this.mGenerateParticles = 0;
+    this.mCurrentState = Arrow.eArrowState.eHit;
+};
 
-    if (!this.mHitSet.hasObject(obj)) {
-        this.mHitSet.addToSet(obj);
-        if (this.mDamage >= 2)
-            this.mDamage--;
-    }
+RegenerationArrow.prototype.regeneration = function (obj) {
+    obj.mPlayer.addBuff(new RegenerationBuff(3, Buff.eAssets.eRegenerationBuffTexture));
 };
