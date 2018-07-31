@@ -75,8 +75,8 @@ Arrow.prototype.update = function () {
 
     if (this.mCurrentState === Arrow.eArrowState.eHit) {
         this.mEffectTimer++;
-//        console.log(this.isEffectEnd());
-//        console.log(this.mEffectTimer);
+        console.log(this.isEffectEnd());
+        console.log(this.mEffectTimer);
         if (this.mEffectTimer >= this.mEffectTimeLimit && this.isEffectEnd()) {
             this.mAllObjs.removeFromSet(this);
             this.mCurrentState = Arrow.eArrowState.eEffect;
@@ -186,7 +186,7 @@ Arrow.prototype.effectOnArcher = function (obj) {
 Arrow.prototype.effectOnDestroyable = function (obj) {
     this.mAllObjs.removeFromSet(this);
     if (obj instanceof LifePotion) {
-        this.mMaster.getArcher().addHp(1);
+        this.mMaster.getArcher().addHp(obj.getRestore());
         this.mAllObjs.removeFromSet(obj);
         this.mDestroyable.removeFromSet(obj);
     }
